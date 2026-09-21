@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpendWise — Personal Finance Manager</title>
+  <meta name="description" content="SpendWise helps you track income, expenses, budgets, savings goals, subscriptions and get smart financial insights." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-bg">
+    <div class="auth-blob blob1"></div>
+    <div class="auth-blob blob2"></div>
+    <div class="auth-blob blob3"></div>
+  </div>
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon-lg">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <span class="logo-text-lg">SpendWise</span>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')" id="tab-login">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')" id="tab-register">Register</button>
+    </div>
+    <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+      <h2 class="auth-title">Welcome back</h2>
+      <p class="auth-subtitle">Sign in to your SpendWise account</p>
+      <div class="form-group">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com" required />
+      </div>
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" required />
+      </div>
+      <div id="login-error" class="form-error hidden"></div>
+      <button type="submit" class="btn btn-primary btn-full" id="login-btn">
+        <span class="btn-text">Sign In</span>
+      </button>
+      <p class="auth-switch">Don't have an account? <a href="#" onclick="switchAuthTab('register'); return false;">Register</a></p>
+    </form>
+    <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
+      <h2 class="auth-title">Create account</h2>
+      <p class="auth-subtitle">Start your financial journey today</p>
+      <div class="form-group">
+        <label for="reg-name">Full Name</label>
+        <input type="text" id="reg-name" placeholder="John Doe" required />
+      </div>
+      <div class="form-group">
+        <label for="reg-email">Email</label>
+        <input type="email" id="reg-email" placeholder="you@example.com" required />
+      </div>
+      <div class="form-group">
+        <label for="reg-password">Password</label>
+        <input type="password" id="reg-password" placeholder="At least 8 characters" required minlength="8" />
+      </div>
+      <div id="reg-error" class="form-error hidden"></div>
+      <button type="submit" class="btn btn-primary btn-full" id="reg-btn">
+        <span class="btn-text">Create Account</span>
+      </button>
+      <p class="auth-switch">Already have an account? <a href="#" onclick="switchAuthTab('login'); return false;">Sign in</a></p>
+    </form>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="app hidden">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon-sm">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <span class="logo-text-sm">SpendWise</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <span class="nav-label">Main</span>
+        <a href="#" class="nav-item active" onclick="navigate('dashboard'); return false;" id="nav-dashboard">
+          <i data-lucide="layout-dashboard" width="18" height="18"></i><span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" onclick="navigate('transactions'); return false;" id="nav-transactions">
+          <i data-lucide="arrow-left-right" width="18" height="18"></i><span>Transactions</span>
+        </a>
+        <a href="#" class="nav-item" onclick="navigate('analytics'); return false;" id="nav-analytics">
+          <i data-lucide="bar-chart-2" width="18" height="18"></i><span>Analytics</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <span class="nav-label">Planning</span>
+        <a href="#" class="nav-item" onclick="navigate('budgets'); return false;" id="nav-budgets">
+          <i data-lucide="wallet" width="18" height="18"></i><span>Budgets</span>
+        </a>
+        <a href="#" class="nav-item" onclick="navigate('goals'); return false;" id="nav-goals">
+          <i data-lucide="target" width="18" height="18"></i><span>Goals</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <span class="nav-label">Recurring</span>
+        <a href="#" class="nav-item" onclick="navigate('subscriptions'); return false;" id="nav-subscriptions">
+          <i data-lucide="credit-card" width="18" height="18"></i><span>Subscriptions</span>
+        </a>
+        <a href="#" class="nav-item" onclick="navigate('recurring'); return false;" id="nav-recurring">
+          <i data-lucide="repeat" width="18" height="18"></i><span>Recurring</span>
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="user-avatar-sidebar">J</div>
+        <div class="user-details">
+          <div class="user-name" id="user-name-sidebar">John Doe</div>
+          <div class="user-email" id="user-email-sidebar">john@example.com</div>
+        </div>
+      </div>
+      <button class="btn-icon logout-btn" onclick="handleLogout()" title="Logout">
+        <i data-lucide="log-out" width="18" height="18"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+          <i data-lucide="menu" width="20" height="20"></i>
+        </button>
+        <h1 class="page-title" id="page-title">Dashboard</h1>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-sm btn-ghost" onclick="loadDemoData()" title="Load 6 months of demo data">
+          <i data-lucide="sparkles" width="14" height="14"></i>
+          <span>Demo Data</span>
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="openAddTransaction()">
+          <i data-lucide="plus" width="14" height="14"></i>
+          <span>Add Transaction</span>
+        </button>
+        <div class="notif-wrap">
+          <button class="btn-icon" onclick="toggleNotifications()" id="notif-btn">
+            <i data-lucide="bell" width="20" height="20"></i>
+            <span class="notif-badge hidden" id="notif-badge">0</span>
+          </button>
+          <div class="notif-panel hidden" id="notif-panel">
+            <div class="notif-head">
+              <span class="notif-title">Notifications</span>
+              <button class="link-btn" onclick="markAllRead()">Mark all read</button>
+            </div>
+            <div class="notif-items" id="notif-items">
+              <div class="empty-sm">No notifications</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <!-- DASHBOARD VIEW -->
+      <div id="view-dashboard" class="view active">
+        <div class="summary-row">
+          <div class="stat-card income-card">
+            <div class="stat-icon"><i data-lucide="trending-up" width="22" height="22"></i></div>
+            <div><div class="stat-label">Total Income</div><div class="stat-value" id="d-income">₹0</div></div>
+          </div>
+          <div class="stat-card expense-card">
+            <div class="stat-icon"><i data-lucide="trending-down" width="22" height="22"></i></div>
+            <div><div class="stat-label">Total Expenses</div><div class="stat-value" id="d-expense">₹0</div></div>
+          </div>
+          <div class="stat-card savings-card">
+            <div class="stat-icon"><i data-lucide="piggy-bank" width="22" height="22"></i></div>
+            <div><div class="stat-label">Net Savings</div><div class="stat-value" id="d-savings">₹0</div></div>
+          </div>
+          <div class="stat-card rate-card">
+            <div class="stat-icon"><i data-lucide="percent" width="22" height="22"></i></div>
+            <div><div class="stat-label">Savings Rate</div><div class="stat-value" id="d-rate">0%</div></div>
+          </div>
+        </div>
+        <div class="dash-grid">
+          <div class="card span-2">
+            <div class="card-hd"><h3>Monthly Overview</h3><div class="legend-row"><span class="dot income-dot"></span>Income<span class="dot expense-dot"></span>Expenses</div></div>
+            <div class="chart-box"><canvas id="monthly-chart"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><h3>Financial Health</h3></div>
+            <div class="health-wrap">
+              <div class="health-ring-wrap">
+                <svg viewBox="0 0 120 120" width="130" height="130">
+                  <circle class="ring-bg" cx="60" cy="60" r="50"/>
+                  <circle class="ring-fg" id="health-ring" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314"/>
+                </svg>
+                <div class="health-center">
+                  <div class="health-num" id="health-num">—</div>
+                  <div class="health-lbl" id="health-lbl">—</div>
+                </div>
+              </div>
+              <div class="health-facts" id="health-facts"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><h3>Top Categories</h3><span class="chip">This month</span></div>
+            <div class="cat-list" id="d-cat-list"><div class="skel-rows"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><h3>Recent Transactions</h3><a href="#" class="link-btn" onclick="navigate('transactions'); return false;">View all</a></div>
+            <div class="recent-list" id="d-recent-list"><div class="skel-rows"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><h3>Budget Status</h3><a href="#" class="link-btn" onclick="navigate('budgets'); return false;">Manage</a></div>
+            <div class="budget-mini-list" id="d-budget-list"><div class="skel-rows"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><h3>Smart Insights</h3></div>
+            <div class="insights-list" id="d-insights"><div class="skel-rows"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRANSACTIONS VIEW -->
+      <div id="view-transactions" class="view hidden">
+        <div class="toolbar">
+          <div class="search-box">
+            <i data-lucide="search" width="15" height="15"></i>
+            <input type="text" id="tx-search" placeholder="Search transactions..." oninput="debounceTxSearch()" />
+          </div>
+          <div class="filter-group">
+            <select id="tx-type-f" onchange="loadTransactions()"><option value="">All Types</option><option value="income">Income</option><option value="expense">Expense</option></select>
+            <select id="tx-cat-f" onchange="loadTransactions()"><option value="">All Categories</option></select>
+            <select id="tx-pay-f" onchange="loadTransactions()">
+              <option value="">All Methods</option>
+              <option value="cash">Cash</option><option value="upi">UPI</option>
+              <option value="debit_card">Debit Card</option><option value="credit_card">Credit Card</option>
+              <option value="bank_transfer">Bank Transfer</option><option value="other">Other</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openAddTransaction()"><i data-lucide="plus" width="14" height="14"></i> Add</button>
+        </div>
+        <div class="card table-card">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr>
+                <th>Date</th><th>Description</th><th>Category</th>
+                <th>Method</th><th>Type</th><th class="tr">Amount</th><th class="tc">Actions</th>
+              </tr></thead>
+              <tbody id="tx-body"><tr><td colspan="7" class="load-cell">Loading...</td></tr></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="tx-pages"></div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS VIEW -->
+      <div id="view-analytics" class="view hidden">
+        <div class="period-bar">
+          <button class="period-btn active" onclick="setAnalyticsPeriod('this_month',this)">This Month</button>
+          <button class="period-btn" onclick="setAnalyticsPeriod('last_month',this)">Last Month</button>
+          <button class="period-btn" onclick="setAnalyticsPeriod('3m',this)">3 Months</button>
+          <button class="period-btn" onclick="setAnalyticsPeriod('this_year',this)">This Year</button>
+        </div>
+        <div class="analytics-grid">
+          <div class="card span-2"><div class="card-hd"><h3>Cash Flow (6 Months)</h3></div><div class="chart-box"><canvas id="cashflow-chart"></canvas></div></div>
+          <div class="card"><div class="card-hd"><h3>Expense by Category</h3></div><div class="chart-box donut-box"><canvas id="cat-donut"></canvas></div></div>
+          <div class="card"><div class="card-hd"><h3>Daily Spending</h3></div><div class="chart-box"><canvas id="daily-chart"></canvas></div></div>
+          <div class="card"><div class="card-hd"><h3>Payment Methods</h3></div><div class="chart-box donut-box"><canvas id="pay-chart"></canvas></div></div>
+        </div>
+      </div>
+
+      <!-- BUDGETS VIEW -->
+      <div id="view-budgets" class="view hidden">
+        <div class="toolbar">
+          <div class="month-nav">
+            <button class="btn-icon" onclick="moveBudgetMonth(-1)"><i data-lucide="chevron-left" width="16" height="16"></i></button>
+            <span class="month-lbl" id="budget-month-lbl">Sep 2026</span>
+            <button class="btn-icon" onclick="moveBudgetMonth(1)"><i data-lucide="chevron-right" width="16" height="16"></i></button>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openAddBudget()"><i data-lucide="plus" width="14" height="14"></i> Add Budget</button>
+        </div>
+        <div class="cards-grid" id="budgets-grid">
+          <div class="skel-card"></div><div class="skel-card"></div><div class="skel-card"></div>
+        </div>
+      </div>
+
+      <!-- GOALS VIEW -->
+      <div id="view-goals" class="view hidden">
+        <div class="toolbar">
+          <span class="view-sub">Savings Goals</span>
+          <button class="btn btn-primary btn-sm" onclick="openAddGoal()"><i data-lucide="plus" width="14" height="14"></i> Add Goal</button>
+        </div>
+        <div class="cards-grid" id="goals-grid">
+          <div class="skel-card"></div><div class="skel-card"></div>
+        </div>
+      </div>
+
+      <!-- SUBSCRIPTIONS VIEW -->
+      <div id="view-subscriptions" class="view hidden">
+        <div class="toolbar">
+          <div class="sub-totals">
+            <span>Monthly: <strong id="sub-mo">₹0</strong></span>
+            <span>Yearly: <strong id="sub-yr">₹0</strong></span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openAddSubscription()"><i data-lucide="plus" width="14" height="14"></i> Add Subscription</button>
+        </div>
+        <div class="cards-grid" id="subs-grid">
+          <div class="skel-card"></div><div class="skel-card"></div><div class="skel-card"></div>
+        </div>
+      </div>
+
+      <!-- RECURRING VIEW -->
+      <div id="view-recurring" class="view hidden">
+        <div class="toolbar">
+          <span class="view-sub">Recurring Transactions</span>
+          <button class="btn btn-primary btn-sm" onclick="openAddRecurring()"><i data-lucide="plus" width="14" height="14"></i> Add Recurring</button>
+        </div>
+        <div class="cards-grid" id="recurring-grid">
+          <div class="skel-card"></div><div class="skel-card"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- MODALS -->
+<!-- Transaction Modal -->
+<div class="overlay hidden" id="tx-overlay" onclick="closeModal('tx-overlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hd">
+      <h3 id="tx-modal-ttl">Add Transaction</h3>
+      <button class="btn-icon" onclick="closeModal('tx-overlay')"><i data-lucide="x" width="18" height="18"></i></button>
+    </div>
+    <form id="tx-form" onsubmit="submitTransaction(event)">
+      <div class="modal-body">
+        <div class="type-pills">
+          <label class="pill-opt"><input type="radio" name="tx-type-r" value="expense" checked onchange="updateTxCats()"><span class="pill expense-pill">Expense</span></label>
+          <label class="pill-opt"><input type="radio" name="tx-type-r" value="income" onchange="updateTxCats()"><span class="pill income-pill">Income</span></label>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Amount (₹)*</label><input type="number" id="tx-amount" placeholder="0.00" step="0.01" min="0.01" required /></div>
+          <div class="form-group"><label>Date*</label><input type="date" id="tx-date" required /></div>
+        </div>
+        <div class="form-group"><label>Description*</label><input type="text" id="tx-desc" placeholder="What was this for?" required /></div>
+        <div class="form-row">
+          <div class="form-group"><label>Category</label><select id="tx-cat"></select></div>
+          <div class="form-group"><label>Payment Method</label>
+            <select id="tx-pay">
+              <option value="cash">Cash</option><option value="upi">UPI</option>
+              <option value="debit_card">Debit Card</option><option value="credit_card">Credit Card</option>
+              <option value="bank_transfer">Bank Transfer</option><option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Notes</label><textarea id="tx-notes" rows="2" placeholder="Optional notes..."></textarea></div>
+        <input type="hidden" id="tx-edit-id" />
+      </div>
+      <div class="modal-ft">
+        <button type="button" class="btn btn-outline" onclick="closeModal('tx-overlay')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="tx-save-btn">Save Transaction</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Budget Modal -->
+<div class="overlay hidden" id="budget-overlay" onclick="closeModal('budget-overlay')">
+  <div class="modal modal-sm" onclick="event.stopPropagation()">
+    <div class="modal-hd"><h3>Add Budget</h3><button class="btn-icon" onclick="closeModal('budget-overlay')"><i data-lucide="x" width="18" height="18"></i></button></div>
+    <form id="budget-form" onsubmit="submitBudget(event)">
+      <div class="modal-body">
+        <div class="form-group"><label>Category*</label><select id="b-cat" required></select></div>
+        <div class="form-row">
+          <div class="form-group"><label>Budget Amount (₹)*</label><input type="number" id="b-amount" placeholder="5000" min="1" required /></div>
+          <div class="form-group"><label>Month*</label><input type="month" id="b-month" required /></div>
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button type="button" class="btn btn-outline" onclick="closeModal('budget-overlay')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Budget</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Goal Modal -->
+<div class="overlay hidden" id="goal-overlay" onclick="closeModal('goal-overlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hd"><h3 id="goal-modal-ttl">Add Savings Goal</h3><button class="btn-icon" onclick="closeModal('goal-overlay')"><i data-lucide="x" width="18" height="18"></i></button></div>
+    <form id="goal-form" onsubmit="submitGoal(event)">
+      <div class="modal-body">
+        <div class="form-group"><label>Goal Name*</label><input type="text" id="g-name" placeholder="e.g. Emergency Fund" required /></div>
+        <div class="form-row">
+          <div class="form-group"><label>Target Amount (₹)*</label><input type="number" id="g-target" placeholder="100000" min="1" required /></div>
+          <div class="form-group"><label>Current Amount (₹)</label><input type="number" id="g-current" placeholder="0" min="0" value="0" /></div>
+        </div>
+        <div class="form-group"><label>Target Date</label><input type="date" id="g-date" /></div>
+        <div class="form-group"><label>Description</label><textarea id="g-desc" rows="2" placeholder="What are you saving for?"></textarea></div>
+        <input type="hidden" id="g-edit-id" />
+      </div>
+      <div class="modal-ft">
+        <button type="button" class="btn btn-outline" onclick="closeModal('goal-overlay')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Goal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Contribution Modal -->
+<div class="overlay hidden" id="contrib-overlay" onclick="closeModal('contrib-overlay')">
+  <div class="modal modal-sm" onclick="event.stopPropagation()">
+    <div class="modal-hd"><h3>Add Contribution</h3><button class="btn-icon" onclick="closeModal('contrib-overlay')"><i data-lucide="x" width="18" height="18"></i></button></div>
+    <form id="contrib-form" onsubmit="submitContribution(event)">
+      <input type="hidden" id="contrib-gid" />
+      <div class="modal-body">
+        <div class="form-group"><label>Amount (₹)*</label><input type="number" id="contrib-amt" placeholder="5000" min="1" required /></div>
+        <div class="form-group"><label>Date*</label><input type="date" id="contrib-date" required /></div>
+        <div class="form-group"><label>Note</label><input type="text" id="contrib-note" placeholder="Optional note" /></div>
+      </div>
+      <div class="modal-ft">
+        <button type="button" class="btn btn-outline" onclick="closeModal('contrib-overlay')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Contribution</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Subscription Modal -->
+<div class="overlay hidden" id="sub-overlay" onclick="closeModal('sub-overlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hd"><h3>Add Subscription</h3><button class="btn-icon" onclick="closeModal('sub-overlay')"><i data-lucide="x" width="18" height="18"></i></button></div>
+    <form id="sub-form" onsubmit="submitSubscription(event)">
+      <div class="modal-body">
+        <div class="form-group"><label>Name*</label><input type="text" id="s-name" placeholder="e.g. Netflix" required /></div>
+        <div class="form-row">
+          <div class="form-group"><label>Amount (₹)*</label><input type="number" id="s-amount" placeholder="649" min="0.01" step="0.01" required /></div>
+          <div class="form-group"><label>Billing Cycle*</label>
+            <select id="s-cycle">
+              <option value="monthly">Monthly</option><option value="yearly">Yearly</option><option value="weekly">Weekly</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Category</label><select id="s-cat"></select></div>
+          <div class="form-group"><label>Next Billing Date*</label><input type="date" id="s-next" required /></div>
+        </div>
+        <div class="form-group"><label>Description</label><input type="text" id="s-desc" placeholder="Optional" /></div>
+        <input type="hidden" id="s-edit-id" />
+      </div>
+      <div class="modal-ft">
+        <button type="button" class="btn btn-outline" onclick="closeModal('sub-overlay')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Subscription</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Recurring Modal -->
+<div class="overlay hidden" id="rec-overlay" onclick="closeModal('rec-overlay')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hd"><h3>Add Recurring Transaction</h3><button class="btn-icon" onclick="closeModal('rec-overlay')"><i data-lucide="x" width="18" height="18"></i></button></div>
+    <form id="rec-form" onsubmit="submitRecurring(event)">
+      <div class="modal-body">
+        <div class="type-pills">
+          <label class="pill-opt"><input type="radio" name="rec-type-r" value="expense" checked><span class="pill expense-pill">Expense</span></label>
+          <label class="pill-opt"><input type="radio" name="rec-type-r" value="income"><span class="pill income-pill">Income</span></label>
+        </div>
+        <div class="form-group"><label>Name*</label><input type="text" id="r-name" placeholder="e.g. Monthly Rent" required /></div>
+        <div class="form-row">
+          <div class="form-group"><label>Amount (₹)*</label><input type="number" id="r-amount" placeholder="12000" min="0.01" step="0.01" required /></div>
+          <div class="form-group"><label>Frequency*</label>
+            <select id="r-freq">
+              <option value="daily">Daily</option><option value="weekly">Weekly</option>
+              <option value="monthly" selected>Monthly</option><option value="yearly">Yearly</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Category</label><select id="r-cat"></select></div>
+          <div class="form-group"><label>Start Date*</label><input type="date" id="r-start" required /></div>
+        </div>
+        <div class="form-group"><label>Payment Method</label>
+          <select id="r-pay">
+            <option value="cash">Cash</option><option value="upi">UPI</option>
+            <option value="debit_card">Debit Card</option><option value="credit_card">Credit Card</option>
+            <option value="bank_transfer" selected>Bank Transfer</option><option value="other">Other</option>
+          </select>
+        </div>
+        <input type="hidden" id="r-edit-id" />
+      </div>
+      <div class="modal-ft">
+        <button type="button" class="btn btn-outline" onclick="closeModal('rec-overlay')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Recurring</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toasts"></div>
+<!-- Sidebar overlay (mobile) -->
+<div class="mob-overlay hidden" id="mob-overlay" onclick="toggleSidebar()"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
