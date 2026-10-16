@@ -208,7 +208,7 @@ function getCategoryName(id) {
 
 function getCategoryColor(id) {
   const cat = categories.find(c => c.id === id);
-  return cat ? cat.color : '#6b7280';
+  return cat ? cat.color : '#a1a1aa';
 }
 
 function getCategoryIcon(id) {
@@ -313,8 +313,8 @@ async function loadMonthlyChart() {
       data: {
         labels: data.map(d => d.month_name),
         datasets: [
-          { label: 'Income', data: data.map(d => d.income), backgroundColor: 'rgba(16,217,138,0.7)', borderRadius: 6, borderSkipped: false },
-          { label: 'Expenses', data: data.map(d => d.expense), backgroundColor: 'rgba(255,95,126,0.7)', borderRadius: 6, borderSkipped: false },
+          { label: 'Income', data: data.map(d => d.income), backgroundColor: '#ffffff', borderRadius: 4, borderSkipped: false },
+          { label: 'Expenses', data: data.map(d => d.expense), backgroundColor: '#3f3f46', borderRadius: 4, borderSkipped: false },
         ]
       },
       options: chartDefaults()
@@ -333,10 +333,7 @@ async function loadHealthScore() {
     const circumference = 314;
     const offset = circumference - (h.score / 100) * circumference;
     ring.style.strokeDashoffset = offset;
-    // Color based on score
-    if (h.score >= 70) ring.style.stroke = 'var(--income)';
-    else if (h.score >= 50) ring.style.stroke = 'var(--warn)';
-    else ring.style.stroke = 'var(--expense)';
+    ring.style.stroke = '#ffffff';
     // Factors
     const facts = document.getElementById('health-facts');
     const pos = h.positive_factors.map(f => `<div class="fact-row fact-pos"><div class="fact-dot"></div>${escHtml(f)}</div>`).join('');
@@ -352,12 +349,12 @@ async function loadDashCategories() {
     if (data.length === 0) { el.innerHTML = '<div class="empty-sm">No expense data yet</div>'; return; }
     el.innerHTML = data.slice(0,5).map(c => `
       <div class="cat-row">
-        <div class="cat-icon" style="background:${c.category_color}22; color:${c.category_color}">
+        <div class="cat-icon">
           <i data-lucide="${iconFor(c.category_icon)}" width="14" height="14"></i>
         </div>
         <div class="cat-info">
           <div class="cat-name">${escHtml(c.category_name)}</div>
-          <div class="cat-bar-wrap"><div class="cat-bar" style="width:${c.percentage}%; background:${c.category_color}"></div></div>
+          <div class="cat-bar-wrap"><div class="cat-bar" style="width:${c.percentage}%"></div></div>
         </div>
         <div class="cat-amount">${fmt(c.amount)}</div>
       </div>
@@ -373,12 +370,11 @@ async function loadRecentTransactions() {
     const el = document.getElementById('d-recent-list');
     if (data.items.length === 0) { el.innerHTML = '<div class="empty-sm">No transactions yet</div>'; return; }
     el.innerHTML = data.items.map(t => {
-      const color = t.category ? t.category.color : '#6b7280';
       const icon = t.category ? t.category.icon : 'tag';
       const sign = t.type === 'income' ? '+' : '-';
       return `
         <div class="tx-row">
-          <div class="tx-cat-dot" style="background:${color}22; color:${color}">
+          <div class="tx-cat-dot">
             <i data-lucide="${iconFor(icon)}" width="14" height="14"></i>
           </div>
           <div class="tx-info">
@@ -465,28 +461,27 @@ async function loadTransactions() {
       return;
     }
     tbody.innerHTML = data.items.map(t => {
-      const color = t.category ? t.category.color : '#6b7280';
       const icon = t.category ? t.category.icon : 'tag';
       const sign = t.type === 'income' ? '+' : '-';
       return `
         <tr>
           <td>${formatDate(t.date)}</td>
           <td>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <div style="width:28px;height:28px;border-radius:7px;background:${color}22;color:${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="tx-cat-dot" style="width:28px;height:28px;border-radius:6px;">
                 <i data-lucide="${iconFor(icon)}" width="13" height="13"></i>
               </div>
-              <span>${escHtml(t.description)}</span>
+              <span style="font-weight:500;">${escHtml(t.description)}</span>
             </div>
           </td>
-          <td>${t.category ? `<span style="font-size:12px;color:${color}">${escHtml(t.category.name)}</span>` : '<span style="color:var(--text3)">—</span>'}</td>
+          <td>${t.category ? `<span style="font-size:12px;color:var(--text2);">${escHtml(t.category.name)}</span>` : '<span style="color:var(--text3)">—</span>'}</td>
           <td><span class="method-badge">${fmtMethod(t.payment_method)}</span></td>
           <td><span class="badge badge-${t.type}">${t.type}</span></td>
-          <td class="tr" style="color:${t.type==='income'?'var(--income)':'var(--expense)'}; font-weight:600;">${sign}${fmt(t.amount)}</td>
+          <td class="tr" style="color:${t.type==='income'?'#ffffff':'#a1a1aa'}; font-weight:600;">${sign}${fmt(t.amount)}</td>
           <td class="tc">
             <div style="display:flex;gap:4px;justify-content:center;">
-              <button class="btn-icon" onclick="openEditTransaction(${t.id})" title="Edit"><i data-lucide="pencil" width="14" height="14"></i></button>
-              <button class="btn-icon" onclick="deleteTransaction(${t.id})" title="Delete" style="color:var(--expense)"><i data-lucide="trash-2" width="14" height="14"></i></button>
+              <button class="btn-icon" onclick="openEditTransaction(${t.id})" title="Edit"><i data-lucide="pencil" width="13" height="13"></i></button>
+              <button class="btn-icon" onclick="deleteTransaction(${t.id})" title="Delete"><i data-lucide="trash-2" width="13" height="13"></i></button>
             </div>
           </td>
         </tr>
@@ -603,8 +598,8 @@ async function loadCashflowChart() {
       data: {
         labels: data.map(d => d.period),
         datasets: [
-          { label: 'Income', data: data.map(d => d.income), borderColor: 'var(--income)', backgroundColor: 'rgba(16,217,138,0.1)', fill: true, tension: 0.4, pointRadius: 4 },
-          { label: 'Expenses', data: data.map(d => d.expense), borderColor: 'var(--expense)', backgroundColor: 'rgba(255,95,126,0.1)', fill: true, tension: 0.4, pointRadius: 4 },
+          { label: 'Income', data: data.map(d => d.income), borderColor: '#ffffff', backgroundColor: 'rgba(255,255,255,0.06)', fill: true, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#ffffff' },
+          { label: 'Expenses', data: data.map(d => d.expense), borderColor: '#71717a', backgroundColor: 'transparent', borderDash: [4, 4], fill: false, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#71717a' },
         ]
       },
       options: chartDefaults()
@@ -617,11 +612,12 @@ async function loadCategoryDonut() {
     const data = await api(`/analytics/categories?period=${analyticsPeriod}&type=expense`) || [];
     destroyChart('cat-donut');
     const ctx = document.getElementById('cat-donut').getContext('2d');
+    const monoColors = ['#ffffff', '#e4e4e7', '#d4d4d8', '#a1a1aa', '#71717a', '#52525b', '#3f3f46', '#27272a'];
     charts['cat-donut'] = new Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: data.map(d => d.category_name),
-        datasets: [{ data: data.map(d => d.amount), backgroundColor: data.map(d => d.category_color), borderWidth: 2, borderColor: 'var(--card)', hoverOffset: 6 }]
+        datasets: [{ data: data.map(d => d.amount), backgroundColor: data.map((_, i) => monoColors[i % monoColors.length]), borderWidth: 2, borderColor: '#09090b', hoverOffset: 4 }]
       },
       options: { ...donutDefaults(), plugins: { ...donutDefaults().plugins, legend: { ...donutDefaults().plugins.legend, display: true } } }
     });
@@ -637,7 +633,7 @@ async function loadDailyChart() {
       type: 'bar',
       data: {
         labels: data.map(d => d.date.slice(8)),  // day number
-        datasets: [{ label: 'Expense', data: data.map(d => d.amount), backgroundColor: 'rgba(255,95,126,0.65)', borderRadius: 4, borderSkipped: false }]
+        datasets: [{ label: 'Expense', data: data.map(d => d.amount), backgroundColor: '#ffffff', borderRadius: 4, borderSkipped: false }]
       },
       options: chartDefaults()
     });
@@ -649,11 +645,12 @@ async function loadPaymentChart() {
     const data = await api(`/analytics/payment-methods?period=${analyticsPeriod}`) || [];
     destroyChart('pay-chart');
     const ctx = document.getElementById('pay-chart').getContext('2d');
+    const monoPalette = ['#ffffff', '#d4d4d8', '#a1a1aa', '#71717a', '#52525b', '#3f3f46', '#27272a'];
     charts['pay-chart'] = new Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: data.map(d => fmtMethod(d.method)),
-        datasets: [{ data: data.map(d => d.amount), backgroundColor: ['#6c63ff','#10d98a','#ff5f7e','#fbbf24','#38bdf8','#a78bfa'], borderWidth: 2, borderColor: 'var(--card)' }]
+        datasets: [{ data: data.map(d => d.amount), backgroundColor: monoPalette, borderWidth: 2, borderColor: '#09090b' }]
       },
       options: donutDefaults()
     });
@@ -676,7 +673,8 @@ async function loadBudgets() {
   try {
     const data = await api(`/budgets?month=${budgetMonth}&year=${budgetYear}`) || [];
     if (data.length === 0) {
-      grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">💰</div><p>No budgets for this month. Click "Add Budget" to get started.</p></div></div>`;
+      grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon"><i data-lucide="wallet" width="24" height="24"></i></div><p>No budgets for this month. Click "Add Budget" to get started.</p></div></div>`;
+      lucide.createIcons();
       return;
     }
     grid.innerHTML = data.map(b => {
@@ -686,7 +684,7 @@ async function loadBudgets() {
         <div class="budget-card">
           <div class="budget-card-hd">
             <div class="budget-cat-info">
-              <div class="budget-icon" style="background:${b.category_color}22; color:${b.category_color}">
+              <div class="budget-icon">
                 <i data-lucide="${iconFor(b.category_icon)}" width="16" height="16"></i>
               </div>
               <div>
@@ -695,22 +693,22 @@ async function loadBudgets() {
               </div>
             </div>
             <div class="budget-actions">
-              <button class="btn-icon" onclick="deleteBudget(${b.id})" title="Delete" style="color:var(--expense)"><i data-lucide="trash-2" width="14" height="14"></i></button>
+              <button class="btn-icon" onclick="deleteBudget(${b.id})" title="Delete"><i data-lucide="trash-2" width="14" height="14"></i></button>
             </div>
           </div>
           <div class="budget-amounts">
-            <span class="budget-spent" style="color:${b.category_color}">${fmt(b.spent)} spent</span>
+            <span class="budget-spent">${fmt(b.spent)} spent</span>
             <span class="budget-limit">of ${fmt(b.amount)}</span>
           </div>
           <div class="budget-pct ${cls}">${b.percentage}%</div>
           <div class="progress-bar"><div class="progress-fill ${barCls}" style="width:${Math.min(b.percentage,100)}%"></div></div>
-          <div style="font-size:12px;color:var(--text3);margin-top:8px;">${fmt(b.remaining)} remaining</div>
+          <div style="font-size:11.5px;color:var(--text3);margin-top:8px;">${fmt(b.remaining)} remaining</div>
         </div>
       `;
     }).join('');
     lucide.createIcons();
   } catch(e) {
-    grid.innerHTML = `<div style="grid-column:1/-1;color:var(--expense);padding:16px;">${e.message}</div>`;
+    grid.innerHTML = `<div style="grid-column:1/-1;color:var(--text2);padding:16px;">${e.message}</div>`;
   }
 }
 
@@ -755,7 +753,8 @@ async function loadGoals() {
   try {
     const data = await api('/goals') || [];
     if (data.length === 0) {
-      grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">🎯</div><p>No savings goals yet. Create one to start tracking!</p></div></div>`;
+      grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon"><i data-lucide="target" width="24" height="24"></i></div><p>No savings goals yet. Create one to start tracking!</p></div></div>`;
+      lucide.createIcons();
       return;
     }
     grid.innerHTML = data.map(g => {
@@ -766,7 +765,7 @@ async function loadGoals() {
             <div class="goal-name">${escHtml(g.name)}</div>
             <div style="display:flex;gap:4px;">
               <button class="btn-icon" onclick="openEditGoal(${g.id})" title="Edit"><i data-lucide="pencil" width="14" height="14"></i></button>
-              <button class="btn-icon" onclick="deleteGoal(${g.id})" title="Delete" style="color:var(--expense)"><i data-lucide="trash-2" width="14" height="14"></i></button>
+              <button class="btn-icon" onclick="deleteGoal(${g.id})" title="Delete"><i data-lucide="trash-2" width="14" height="14"></i></button>
             </div>
           </div>
           <div class="goal-desc">${escHtml(g.description || '')}</div>
@@ -780,7 +779,7 @@ async function loadGoals() {
             <span>${g.progress_percentage}% complete</span>
             <span>${fmt(g.remaining_amount)} to go</span>
           </div>
-          ${g.target_date ? `<div style="font-size:12px;color:var(--text3);margin-bottom:12px;">Target: ${formatDate(g.target_date)}</div>` : ''}
+          ${g.target_date ? `<div style="font-size:11.5px;color:var(--text3);margin-bottom:12px;">Target: ${formatDate(g.target_date)}</div>` : ''}
           <div class="goal-footer">
             <button class="btn btn-sm btn-primary" onclick="openContribute(${g.id})" style="flex:1;justify-content:center;" ${g.is_completed ? 'disabled' : ''}>
               <i data-lucide="plus" width="12" height="12"></i> Add Funds
@@ -791,7 +790,7 @@ async function loadGoals() {
     }).join('');
     lucide.createIcons();
   } catch(e) {
-    grid.innerHTML = `<div style="color:var(--expense);padding:16px;">${e.message}</div>`;
+    grid.innerHTML = `<div style="color:var(--text2);padding:16px;">${e.message}</div>`;
   }
 }
 
@@ -885,7 +884,8 @@ async function loadSubscriptions() {
     document.getElementById('sub-mo').textContent = fmt(monthly);
     document.getElementById('sub-yr').textContent = fmt(yearly);
     if (data.length === 0) {
-      grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">💳</div><p>No subscriptions tracked yet.</p></div></div>`;
+      grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon"><i data-lucide="credit-card" width="24" height="24"></i></div><p>No subscriptions tracked yet.</p></div></div>`;
+      lucide.createIcons();
       return;
     }
     grid.innerHTML = data.map(s => {
@@ -909,14 +909,14 @@ async function loadSubscriptions() {
           <div class="sub-next"><i data-lucide="calendar" width="12" height="12"></i> Next billing: ${formatDate(s.next_billing_date)}</div>
           <div class="sub-footer">
             <button class="btn btn-sm btn-outline" onclick="openEditSubscription(${s.id})" style="flex:1;justify-content:center;"><i data-lucide="pencil" width="12" height="12"></i> Edit</button>
-            <button class="btn-icon" onclick="deleteSubscription(${s.id})" title="Delete" style="color:var(--expense)"><i data-lucide="trash-2" width="14" height="14"></i></button>
+            <button class="btn-icon" onclick="deleteSubscription(${s.id})" title="Delete"><i data-lucide="trash-2" width="14" height="14"></i></button>
           </div>
         </div>
       `;
     }).join('');
     lucide.createIcons();
   } catch(e) {
-    grid.innerHTML = `<div style="color:var(--expense);padding:16px;">${e.message}</div>`;
+    grid.innerHTML = `<div style="color:var(--text2);padding:16px;">${e.message}</div>`;
   }
 }
 
@@ -985,7 +985,8 @@ async function loadRecurring() {
   try {
     const data = await api('/recurring') || [];
     if (data.length === 0) {
-      grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">🔄</div><p>No recurring transactions set up yet.</p></div></div>`;
+      grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon"><i data-lucide="repeat" width="24" height="24"></i></div><p>No recurring transactions set up yet.</p></div></div>`;
+      lucide.createIcons();
       return;
     }
     grid.innerHTML = data.map(r => `
@@ -997,7 +998,7 @@ async function loadRecurring() {
           </div>
           <div style="display:flex;gap:4px;">
             <span class="freq-chip">${r.frequency}</span>
-            <button class="btn-icon" onclick="deleteRecurring(${r.id})" title="Delete" style="color:var(--expense)"><i data-lucide="trash-2" width="14" height="14"></i></button>
+            <button class="btn-icon" onclick="deleteRecurring(${r.id})" title="Delete"><i data-lucide="trash-2" width="14" height="14"></i></button>
           </div>
         </div>
         <div class="rec-body">
@@ -1011,7 +1012,7 @@ async function loadRecurring() {
     `).join('');
     lucide.createIcons();
   } catch(e) {
-    grid.innerHTML = `<div style="color:var(--expense);padding:16px;">${e.message}</div>`;
+    grid.innerHTML = `<div style="color:var(--text2);padding:16px;">${e.message}</div>`;
   }
 }
 
@@ -1099,17 +1100,31 @@ function showToast(msg, type = 'info') {
 function chartDefaults() {
   return {
     responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#13161f', borderColor: '#222636', borderWidth: 1, titleColor: '#e8eaf6', bodyColor: '#9ea3bb', padding: 10, callbacks: { label: ctx => ` ₹${ctx.parsed.y?.toLocaleString('en-IN') || ctx.parsed.toLocaleString('en-IN')}` } } },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#09090b',
+        borderColor: 'rgba(255,255,255,0.15)',
+        borderWidth: 1,
+        titleColor: '#ffffff',
+        bodyColor: '#a1a1aa',
+        padding: 10,
+        callbacks: { label: ctx => ` ₹${ctx.parsed.y?.toLocaleString('en-IN') || ctx.parsed.toLocaleString('en-IN')}` }
+      }
+    },
     scales: {
-      x: { grid: { color: '#222636', drawBorder: false }, ticks: { color: '#9ea3bb', font: { family: 'Inter', size: 11 } } },
-      y: { grid: { color: '#222636', drawBorder: false }, ticks: { color: '#9ea3bb', font: { family: 'Inter', size: 11 }, callback: v => '₹'+v.toLocaleString('en-IN') } }
+      x: { grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }, ticks: { color: '#71717a', font: { family: 'Inter', size: 11 } } },
+      y: { grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }, ticks: { color: '#71717a', font: { family: 'Inter', size: 11 }, callback: v => '₹'+v.toLocaleString('en-IN') } }
     }
   };
 }
 function donutDefaults() {
   return {
-    responsive: true, maintainAspectRatio: false, cutout: '65%',
-    plugins: { legend: { display: true, position: 'bottom', labels: { color: '#9ea3bb', font: { family: 'Inter', size: 11 }, padding: 10, boxWidth: 10 } }, tooltip: { backgroundColor: '#13161f', borderColor: '#222636', borderWidth: 1, titleColor: '#e8eaf6', bodyColor: '#9ea3bb', padding: 10 } }
+    responsive: true, maintainAspectRatio: false, cutout: '70%',
+    plugins: {
+      legend: { display: true, position: 'bottom', labels: { color: '#a1a1aa', font: { family: 'Inter', size: 11 }, padding: 12, boxWidth: 10 } },
+      tooltip: { backgroundColor: '#09090b', borderColor: 'rgba(255,255,255,0.15)', borderWidth: 1, titleColor: '#ffffff', bodyColor: '#a1a1aa', padding: 10 }
+    }
   };
 }
 function destroyChart(id) {
