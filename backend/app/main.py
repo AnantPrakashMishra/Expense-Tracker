@@ -51,13 +51,20 @@ app.include_router(notifications.router)
 app.include_router(demo.router)
 
 
-@app.get("/")
-def root():
-    return {
-        "message": "SpendWise API",
-        "version": "1.0.0",
-        "docs": "/docs",
-    }
+from fastapi.staticfiles import StaticFiles
+
+# Mount frontend static files (serves UI at / and assets)
+FRONTEND_DIR = BASE_DIR.parent / "frontend"
+if FRONTEND_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
+else:
+    @app.get("/")
+    def root():
+        return {
+            "message": "SpendWise API",
+            "version": "1.0.0",
+            "docs": "/docs",
+        }
 
 
 @app.get("/health")

@@ -5,7 +5,9 @@
 
 'use strict';
 
-const API = 'https://expense-tracker-nx5j.onrender.com';
+const API = (window.location.origin && window.location.origin !== 'null' && window.location.protocol !== 'file:')
+  ? window.location.origin
+  : 'https://expense-tracker-nx5j.onrender.com';
 
 // ── STATE ───────────────────────────────────
 let token = localStorage.getItem('sw_token') || null;
