@@ -5,8 +5,7 @@
 
 'use strict';
 
-// ── CONFIG ──────────────────────────────────
-const API = 'http://localhost:8000';  // Change if backend runs elsewhere
+const API = 'https://expense-tracker-nx5j.onrender.com';
 
 // ── STATE ───────────────────────────────────
 let token = localStorage.getItem('sw_token') || null;
